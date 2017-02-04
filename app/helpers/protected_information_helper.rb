@@ -1,0 +1,2 @@
+module ProtectedInformationHelper
+end
