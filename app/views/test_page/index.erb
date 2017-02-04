@@ -1,0 +1,54 @@
+<input type="button" value="Log in" id="loginButton">
+<input type="hidden" id="AccessToken">
+<input type="hidden" id="Client">
+<input type="hidden" id="Expiry">
+
+<br><br>
+
+<input type="button" value="get protected info" id="retrieveButton"> 
+<small><span id="Result">Request response will shows up here</span></small>
+
+<script type="text/javascript">
+  $(function(){
+  	var token = $( 'meta[name="csrf-token"]' ).attr( 'content' );
+
+    $.ajaxSetup( {
+      beforeSend: function ( xhr ) {
+        xhr.setRequestHeader( 'X-CSRF-Token', token );
+      }
+    });      
+
+  	$('#loginButton').click(function (){
+  		var request = $.post('/auth/sign_in', {email:"test@test.com", password: "password"})
+  			.then(function(data, textStatus, jqXHR){
+	  			var accessToken = jqXHR.getResponseHeader('access-token');
+	  			$('#AccessToken').val(accessToken);
+	  			$('#Client').val(jqXHR.getResponseHeader('client'));
+	  			$('#Expiry').val(jqXHR.getResponseHeader('expiry'));
+	  			$('#loginButton').val("Logged in");
+	  		});
+  	});
+
+  	$('#retrieveButton').click(function (){
+  		var request = $.ajax({
+  				url: '/protected_information', 
+  				headers: {
+  					'access-token': $('#AccessToken').val(),
+  					'token-type': "Bearer",
+  					'uid': "test@test.com",
+  					'client': $('#Client').val(),
+  					'expiry': $('#Expiry').val()
+  				}
+  			})
+  			.then(function(data, textStatus, jqXHR)
+  			{
+	  			$('#Result').html(jqXHR.status + ":" + jqXHR.responseText);
+
+	  		}, function(jqXHR) {
+	  			$('#Result').html(jqXHR.status + ":" + jqXHR.responseText);
+	  		});
+  	});
+
+
+  });
+</script>
